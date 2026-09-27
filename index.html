@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>FreeStep VR: Lane Dodge &amp; Shoot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;}
+  #hud{position:fixed;left:10px;top:10px;z-index:20;color:#fff;font-family:system-ui,Segoe UI,Roboto,Arial;font-size:16px;line-height:1.3;}
+  #hud button{font-size:16px;padding:6px 10px;margin:2px;}
+  #hud .row{margin-top:4px}
+  #msgs{position:fixed;right:10px;top:10px;z-index:20;color:#0f0;font-family:monospace;font-size:12px;opacity:.8;}
+</style>
+  </head>
+  <body>
+    <div id="hud">
+      <div class="row"> <button id="btnConnect">🔌 Connect FreeStep</button> <button
+          id="btnShoot">🔫 Shoot</button> </div>
+      <div class="row">BLE: <span id="ble">disconnected</span></div>
+      <div class="row">Speed: <span id="spd">0.00</span> m/s (cap 1.11)</div>
+      <div class="row">Lives: <span id="lives">3</span> &nbsp; Score: <span id="score">0</span></div>
+      <div class="row">Tip: VR trigger / Space / Tap = shoot. W/S = simulate
+        speed.</div>
+    </div>
+    <div id="msgs"></div>
+    <script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js';
+import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.159.0/examples/jsm/webxr/VRButton.js';
+
+//// ---------- CONFIG ----------
+const MAX_SPEED = 1.111;     // 4 km/h in m/s
+const ENEMY_Y   = 2.0;       // enemies float above
+const ENEMY_X   = 2.2;       // left/right offset
+const ENEMY_Z   = -8;        // in front of player
+const BULLET_SPEED = 1.6;    // enemy bullet m/s (slow to allow dodge)
+const PLAYER_BULLET_SPEED = 8.0; // your shot
+const FIRE_INTERVAL_MIN = 900;   // ms
+const FIRE_INTERVAL_MAX = 1600;  // ms
+const HIT_RADIUS = 0.35;     // collision distance (player vs bullet)
+const ENEMY_HIT_RADIUS = 0.6; // collision for your shots
+const SPEED_SMOOTH = 0.18;   // smoothing factor for treadmill speed
+
+// BLE UUIDs (custom from earlier examples). Change if needed.
+const SERVICE_UUID = '12345678-1234-5678-1234-56789abcdef0';
+const CHAR_UUID    = '12345678-1234-5678-1234-56789abcdef1';
+
+//// ---------- UI refs ----------
+const elBLE   = document.getElementById('ble');
+const elSPD   = document.getElementById('spd');
+const elLives = document.getElementById('lives');
+const elScore = document.getElementById('score');
+const msgs    = document.getElementById('msgs');
+
+function logMsg(m){ msgs.textContent = m; setTimeout(()=>{ if(msgs.textContent===m) msgs.textContent=''; }, 2000); }
+
+//// ---------- Game state ----------
+let renderer, scene, camera, player;
+let lastT = performance.now();
+let smoothedSpeed = 0; // signed (forward +, back -)
+let bleDevice=null, bleChar=null, bleConnected=false;
+
+let lives = 3;
+let score = 0;
+let gameOver = false;
+
+// pools
+const enemyBullets = [];
+const playerBullets = [];
+
+let enemyLeft, enemyRight;
+let nextLeftFireAt = 0;
+let nextRightFireAt = 0;
+
+//// ---------- Setup 3D / WebXR ----------
+init();
+spawnEnemies();
+animate();
+
+function init(){
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x88c0ff);
+
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 1000);
+
+  // Player group (stay centered on X)
+  player = new THREE.Group();
+  player.position.set(0, 1.6, 0);
+  player.add(camera);
+  scene.add(player);
+
+  // Lane / road
+  const road = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.2, 400, 1, 40),
+    new THREE.MeshStandardMaterial({ color: 0x303030 })
+  );
+  road.rotation.x = -Math.PI/2;
+  road.position.z = -200;
+  scene.add(road);
+
+  // Lane markings
+  const marks = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.1, 400, 1, 1),
+    new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide })
+  );
+  marks.rotation.x = -Math.PI/2;
+  marks.position.set(0, 0.001, -200);
+  scene.add(marks);
+
+  // Ground sides (grass)
+  const grassMat = new THREE.MeshStandardMaterial({ color: 0x3a7d2b });
+  const grassL = new THREE.Mesh(new THREE.PlaneGeometry(20, 400), grassMat);
+  grassL.rotation.x = -Math.PI/2; grassL.position.set(-11.2, 0, -200);
+  scene.add(grassL);
+  const grassR = grassL.clone(); grassR.position.x = 11.2; scene.add(grassR);
+
+  // Lighting
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.2));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+  dir.position.set(2, 5, 2); scene.add(dir);
+
+  // Reticle
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.02,0.04,32), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
+  ring.position.set(0,0,-1); camera.add(ring);
+
+  // Renderer + XR
+  renderer = new THREE.WebGLRenderer({ antialias:true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.xr.enabled = true;
+  document.body.appendChild(renderer.domElement);
+  document.body.appendChild(VRButton.createButton(renderer));
+  window.addEventListener('resize', onResize);
+
+  // XR controller for shooting
+  const controller = renderer.xr.getController(0);
+  controller.addEventListener('selectstart', shoot);
+  scene.add(controller);
+
+  // UI buttons
+  document.getElementById('btnConnect').addEventListener('click', connectBLE);
+  document.getElementById('btnShoot').addEventListener('click', shoot);
+
+  // Keyboard fallback (W/S to simulate speed; Space shoot)
+  window.addEventListener('keydown', (e)=>{
+    if (e.code==='Space') shoot();
+    if (e.code==='KeyW' || e.code==='ArrowUp') virtualSpeed = Math.min(virtualSpeed+0.2, 1.0);
+    if (e.code==='KeyS' || e.code==='ArrowDown') virtualSpeed = Math.max(virtualSpeed-0.2, -1.0);
+  });
+}
+
+function onResize(){
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+//// ---------- Enemies ----------
+function spawnEnemies(){
+  const geo = new THREE.SphereGeometry(0.35, 20, 20);
+  const matL = new THREE.MeshStandardMaterial({ color: 0xff5050, emissive: 0x330000 });
+  const matR = new THREE.MeshStandardMaterial({ color: 0x50a0ff, emissive: 0x001533 });
+
+  enemyLeft = new THREE.Mesh(geo, matL);
+  enemyLeft.position.set(-ENEMY_X, ENEMY_Y, ENEMY_Z);
+  scene.add(enemyLeft);
+
+  enemyRight = new THREE.Mesh(geo, matR);
+  enemyRight.position.set( ENEMY_X, ENEMY_Y, ENEMY_Z);
+  scene.add(enemyRight);
+
+  scheduleFire();
+}
+
+function scheduleFire(){
+  const now = performance.now();
+  nextLeftFireAt  = now + rand(FIRE_INTERVAL_MIN, FIRE_INTERVAL_MAX);
+  nextRightFireAt = now + rand(FIRE_INTERVAL_MIN, FIRE_INTERVAL_MAX);
+}
+
+function rand(a,b){ return a + Math.random()*(b-a); }
+
+//// ---------- Bullets ----------
+function spawnEnemyBullet(from){
+  const b = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12),
+                           new THREE.MeshStandardMaterial({ color: 0xffdd66, emissive: 0x221100 }));
+  b.position.copy(from.position);
+
+  // compute direction to player's current head position (diagonal down)
+  const target = new THREE.Vector3(player.position.x, 1.4, player.position.z);
+  const vel = target.clone().sub(b.position).normalize().multiplyScalar(BULLET_SPEED);
+  b.userData.vel = vel;
+  b.userData.owner = 'enemy';
+  enemyBullets.push(b);
+  scene.add(b);
+}
+
+function spawnPlayerBullet(){
+  const b = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 10),
+                           new THREE.MeshStandardMaterial({ color: 0x99ff99, emissive: 0x113311 }));
+  // start near camera, slightly forward
+  const start = new THREE.Vector3(0, -0.05, -0.3).applyMatrix4(camera.matrixWorld);
+  b.position.copy(start);
+
+  // forward from camera (flatten Y a bit so it travels roughly forward)
+  const forward = new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion);
+  forward.y *= 0.2; // bias toward flat shot
+  forward.normalize();
+  b.userData.vel = forward.multiplyScalar(PLAYER_BULLET_SPEED);
+  b.userData.owner = 'player';
+  playerBullets.push(b);
+  scene.add(b);
+}
+
+function shoot(){ if (!gameOver) spawnPlayerBullet(); }
+
+//// ---------- BLE ----------
+async function connectBLE(){
+  try{
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [SERVICE_UUID] }]
+    });
+    bleDevice = device;
+    bleDevice.addEventListener('gattserverdisconnected', ()=>{ bleConnected=false; elBLE.textContent='disconnected'; });
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE_UUID);
+    bleChar = await service.getCharacteristic(CHAR_UUID);
+    await bleChar.startNotifications();
+    bleChar.addEventListener('characteristicvaluechanged', onNotify);
+    bleConnected = true; elBLE.textContent = 'connected';
+    logMsg('BLE connected');
+  }catch(e){
+    elBLE.textContent = 'error';
+    logMsg('BLE error: ' + e);
+    console.error(e);
+  }
+}
+
+// Expect JSON: {"spd":<m/s>,"dir":-1|0|1,"lat":0}
+let telemetry = { spd:0, dir:0, lat:0 };
+function onNotify(ev){
+  try{
+    const txt = new TextDecoder().decode(ev.target.value);
+    const obj = JSON.parse(txt);
+    telemetry.spd = Number(obj.spd)||0;
+    telemetry.dir = Number(obj.dir)||0;
+    telemetry.lat = Number(obj.lat)||0;
+  }catch(err){
+    console.warn('BLE parse', err);
+  }
+}
+
+// Keyboard simulation when BLE not sending:
+let virtualSpeed = 0; // -1..1 (signed fraction of MAX_SPEED)
+
+//// ---------- Main loop ----------
+function animate(){ renderer.setAnimationLoop(tick); }
+
+function tick(){
+  const now = performance.now();
+  const dt = Math.min(0.05, (now - lastT)/1000);
+  lastT = now;
+
+  // Update speed (signed): prefer BLE, else simulate
+  const signedTarget =
+    bleConnected ? clamp((telemetry.spd||0) * (telemetry.dir||0), -MAX_SPEED, MAX_SPEED)
+                 : clamp(virtualSpeed * MAX_SPEED, -MAX_SPEED, MAX_SPEED);
+
+  // Smooth it
+  smoothedSpeed += (signedTarget - smoothedSpeed) * SPEED_SMOOTH;
+  elSPD.textContent = Math.abs(smoothedSpeed).toFixed(2);
+
+  // Move player along Z only; lock X=0 (center lane)
+  const dz = smoothedSpeed * dt;
+  player.position.x = 0;
+  player.position.z += dz;
+
+  // Enemies fire
+  if (!gameOver){
+    if (now >= nextLeftFireAt)  { spawnEnemyBullet(enemyLeft);  nextLeftFireAt  = now + rand(FIRE_INTERVAL_MIN, FIRE_INTERVAL_MAX); }
+    if (now >= nextRightFireAt) { spawnEnemyBullet(enemyRight); nextRightFireAt = now + rand(FIRE_INTERVAL_MIN, FIRE_INTERVAL_MAX); }
+  }
+
+  // Update bullets
+  updateBullets(enemyBullets, dt);
+  updateBullets(playerBullets, dt);
+
+  // Check collisions: enemy bullets vs player
+  for (let i=enemyBullets.length-1;i>=0;i--){
+    const b = enemyBullets[i];
+    if (dist3(b.position, new THREE.Vector3(player.position.x, 1.4, player.position.z)) < HIT_RADIUS){
+      // hit!
+      scene.remove(b); enemyBullets.splice(i,1);
+      takeHit();
+      break;
+    }
+  }
+
+  // Check collisions: player bullets vs enemies
+  checkHitEnemy(playerBullets, enemyLeft);
+  checkHitEnemy(playerBullets, enemyRight);
+
+  renderer.render(scene, camera);
+}
+
+function updateBullets(list, dt){
+  for (let i=list.length-1;i>=0;i--){
+    const b = list[i];
+    b.position.addScaledVector(b.userData.vel, dt);
+    // remove if too far
+    if (Math.abs(b.position.z - player.position.z) > 60 || Math.abs(b.position.x) > 20 || b.position.y < -2 || b.position.y > 8){
+      scene.remove(b); list.splice(i,1);
+    }
+  }
+}
+
+function takeHit(){
+  if (gameOver) return;
+  lives -= 1; elLives.textContent = String(lives);
+  logMsg('💥 Hit!');
+  if (lives <= 0){
+    gameOver = true;
+    logMsg('🛑 Game Over — reload page to retry');
+  }
+}
+
+function checkHitEnemy(list, enemy){
+  if (!enemy) return;
+  for (let i=list.length-1;i>=0;i--){
+    const b = list[i];
+    if (dist3(b.position, enemy.position) < ENEMY_HIT_RADIUS){
+      scene.remove(b); list.splice(i,1);
+      // "destroy" enemy and respawn after short delay
+      enemy.visible = false;
+      score += 100; elScore.textContent = String(score);
+      logMsg('🎯 Enemy hit +100');
+      setTimeout(()=>{
+        enemy.position.set(enemy===enemyLeft ? -ENEMY_X : ENEMY_X, ENEMY_Y, ENEMY_Z + (Math.random()*4-2));
+        enemy.visible = true;
+      }, 1200);
+      break;
+    }
+  }
+}
+
+function dist3(a, b){ return Math.hypot(a.x-b.x, a.y-b.y, a.z-b.z); }
+function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+
+</script>
+  </body>
+</html>
