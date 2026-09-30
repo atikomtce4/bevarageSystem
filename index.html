@@ -290,6 +290,78 @@
     nav a { font-size: 13px; }
     .logo span { display: none; }
   }
+  /* ===== Products ===== */
+  .product-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .product-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 12px 32px rgba(0, 194, 168, 0.2);
+  }
+  .product-image {
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, var(--bg-2), var(--card));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    position: relative;
+  }
+  .product-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--accent);
+    color: #001a15;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .product-info {
+    padding: 16px;
+  }
+  .product-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .product-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .product-price {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .price-current {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .price-old {
+    font-size: 14px;
+    color: var(--text-dim);
+    text-decoration: line-through;
+  }
+  .product-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .product-actions .btn {
+    flex: 1;
+  }
 </style>
 </head>
 <body>
@@ -303,6 +375,7 @@
     </div>
     <nav>
       <ul>
+        <li><a href="#products">🛒 สินค้า</a></li>  <!-- เพิ่มบรรทัดนี้ -->
         <li><a href="#videos">วิดีโอ</a></li>
         <li><a href="#recipes">สูตร</a></li>
         <li><a href="#posts">ข่าวสาร</a></li>
@@ -338,7 +411,14 @@
   </p>
   <div class="grid" id="recipesGrid"></div>
 </section>
-
+<!-- ========== PRODUCTS ========== -->
+<section id="products">
+  <h2 class="section-title">สินค้า & อุปกรณ์</h2>
+  <p style="color: var(--text-dim); margin-bottom: 20px; font-size: 14px;">
+    เครื่องทำเครื่องดื่ม ชุดสมุนไพร และอุปกรณ์เสริม พร้อมส่ง
+  </p>
+  <div class="grid" id="productsGrid"></div>
+</section>
 <!-- ========== POSTS ========== -->
 <section id="posts">
   <h2 class="section-title">ข่าวสาร & อัปเดต</h2>
@@ -462,7 +542,69 @@ const CONTACTS = [
   { icon: '📧', name: 'Email',      desc: 'สอบถามทางอีเมล',     link: 'mailto:you@example.com' },
   { icon: '📝', name: 'แบบฟอร์ม',   desc: 'สั่งซื้อ/สั่งทำ',      link: 'https://forms.gle/xxxxx' },
 ];
-
+// สินค้า
+const PRODUCTS = [
+  {
+    id: 'machine-pro',
+    name: 'เครื่องทำเครื่องดื่มอัตโนมัติ Pro',
+    emoji: '🤖',
+    desc: 'เครื่องขนาด 20 ลิตร ควบคุมผ่านเว็บ ตวงน้ำอัตโนมัติ ต้มอุณหภูมิแม่นยำ แจ้งเตือนเมื่อต้องใส่วัตถุดิบ',
+    price: 15900,
+    oldPrice: 19900,
+    badge: 'ขายดี',
+    link: 'https://line.me/R/ti/p/@yourid'
+  },
+  {
+    id: 'machine-mini',
+    name: 'เครื่องทำเครื่องดื่ม Mini',
+    emoji: '⚙️',
+    desc: 'เครื่องขนาด 10 ลิตร เหมาะสำหรับใช้ในบ้านหรือร้านเล็กๆ ครบทุกฟังก์ชัน',
+    price: 9900,
+    oldPrice: 12900,
+    badge: 'แนะนำ',
+    link: 'https://line.me/R/ti/p/@yourid'
+  },
+  {
+    id: 'herbal-set',
+    name: 'ชุดสมุนไพร 3 สูตร',
+    emoji: '🌿',
+    desc: 'กระเจี๊ยบ 120g + เก๊กฮวย 150g + สามเกลอ 2 ห่อ พร้อมตะกร้าใส่สมุนไพร',
+    price: 450,
+    oldPrice: 590,
+    badge: 'ประหยัด 24%',
+    link: 'https://line.me/R/ti/p/@yourid'
+  },
+  {
+    id: 'tea-set',
+    name: 'ชุดชาไทยพรีเมียม',
+    emoji: '🧋',
+    desc: 'ผงชาไทย 200g + นมสดพาสเจอร์ไรซ์ 2L + หญ้าหวาน 100g ทำได้ 10 ลิตร',
+    price: 390,
+    oldPrice: null,
+    badge: null,
+    link: 'https://line.me/R/ti/p/@yourid'
+  },
+  {
+    id: 'accessory-basket',
+    name: 'ตะกร้าใส่สมุนไพร (สแตนเลส)',
+    emoji: '🧺',
+    desc: 'ตะกร้าสแตนเลส 304 ทนความร้อน ขนาดพอดีหม้อ 20L พร้อมหูจับ',
+    price: 350,
+    oldPrice: null,
+    badge: null,
+    link: 'https://line.me/R/ti/p/@yourid'
+  },
+  {
+    id: 'accessory-chiller',
+    name: 'ชุด Cool Down (คอยล์ทองแดง)',
+    emoji: '❄️',
+    desc: 'คอยล์ทองแดง 10 เมตร + ปั๊มจุ่ม 12V ลดอุณหภูมิน้ำจาก 95°C → 60°C ใน 15 นาที',
+    price: 1200,
+    oldPrice: 1500,
+    badge: 'ใหม่',
+    link: 'https://line.me/R/ti/p/@yourid'
+  },
+];
 /* =====================================================
    🎨 Render UI
 ===================================================== */
@@ -539,7 +681,28 @@ function renderContacts() {
     </a>
   `).join('');
 }
-
+function renderProducts() {
+  document.getElementById('productsGrid').innerHTML = PRODUCTS.map(p => `
+    <div class="product-card">
+      <div class="product-image">
+        ${p.emoji}
+        ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
+      </div>
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-price">
+          <span class="price-current">฿${p.price.toLocaleString()}</span>
+          ${p.oldPrice ? `<span class="price-old">฿${p.oldPrice.toLocaleString()}</span>` : ''}
+        </div>
+        <div class="product-actions">
+          <a href="${p.link}" target="_blank" rel="noopener" class="btn btn-primary">สั่งซื้อ</a>
+          <a href="#contact" class="btn">สอบถาม</a>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
 /* =====================================================
    📋 Copy / Download สูตร
 ===================================================== */
@@ -581,6 +744,7 @@ function downloadRecipe(i) {
 renderCategories();
 renderVideos();
 renderRecipes();
+renderProducts();  // เพิ่มบรรทัดนี้
 renderPosts();
 renderContacts();
 </script>
