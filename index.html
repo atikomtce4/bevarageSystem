@@ -292,76 +292,50 @@
   }
   /* ===== Products ===== */
   .product-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: all 0.2s;
-    position: relative;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; transition: all .2s;
+    cursor: pointer; text-decoration: none; color: inherit; display: block;
   }
   .product-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--accent);
-    box-shadow: 0 12px 32px rgba(0, 194, 168, 0.2);
+    transform: translateY(-4px); border-color: var(--accent);
+    box-shadow: 0 12px 32px rgba(0,194,168,.2); text-decoration: none;
   }
   .product-image {
-    aspect-ratio: 1;
+    aspect-ratio: 4/3; position: relative; overflow: hidden;
     background: linear-gradient(135deg, var(--bg-2), var(--card));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 80px;
-    position: relative;
+    display: flex; align-items: center; justify-content: center;
   }
+  .product-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+  .product-card:hover .product-image img { transform: scale(1.05); }
+  .product-image .emoji-fallback { font-size: 72px; }
   .product-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: var(--accent);
-    color: #001a15;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
+    position: absolute; top: 12px; right: 12px; z-index: 2;
+    background: var(--accent); color: #001a15;
+    padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700;
   }
-  .product-info {
-    padding: 16px;
-  }
-  .product-name {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
+  .product-info { padding: 16px; }
+  .product-name { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
   .product-desc {
     font-size: 13px;
     color: var(--text-dim);
     margin-bottom: 12px;
-    line-height: 1.5;
+    
+    /* วิธีมาตรฐาน */
+    display: block;
+    max-height: 2.8em;
+    line-height: 1.4;
+    overflow: hidden;
+    
+    /* WebKit fallback */
+    @supports (-webkit-line-clamp: 2) {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
   }
-  .product-price {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .price-current {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--accent);
-  }
-  .price-old {
-    font-size: 14px;
-    color: var(--text-dim);
-    text-decoration: line-through;
-  }
-  .product-actions {
-    display: flex;
-    gap: 8px;
-  }
-  .product-actions .btn {
-    flex: 1;
-  }
+  .product-price { display: flex; align-items: baseline; gap: 8px; }
+  .price-current { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .price-old { font-size: 14px; color: var(--text-dim); text-decoration: line-through; }
 </style>
 </head>
 <body>
@@ -445,7 +419,7 @@
 
 // หมวดคลิป (คลิกการ์ดเพื่อข้ามไปช่อง YouTube)
 const CATEGORIES = [
-  { emoji: '🌿', name: 'สมุนไพรไทย',    desc: 'กระเจี๊ยบ, เก๊กฮวย, สามเกลอ',    count: 3, link: 'https://www.youtube.com/playlist?list=PLUeP7jtVf2ZU' },
+  { emoji: '🌿', name: 'สมุนไพรไทย',    desc: 'กระเจี๊ยบ, เก๊กฮวย, สามเกลอ',    count: 1, link: 'https://www.youtube.com/playlist?list=PLUeP7jtVf2ZU' },
   { emoji: '🍵', name: 'ชา & เครื่องดื่มร้อน', desc: 'ชาไทย, ชาเขียว, ชานม',     count: 2, link: 'https://www.youtube.com/@atikomtce4' },
   { emoji: '🥛', name: 'นม & ธัญพืช',   desc: 'นมถั่วเหลือง, นมข้าวโพด',        count: 1, link: 'https://www.youtube.com/@atikomtce4' },
   { emoji: '🍺', name: 'เครื่องดื่มหมัก', desc: 'คอมบูฉะ, เบียร์, โยเกิร์ต',      count: 1, link: 'https://www.youtube.com/@atikomtce4' },
@@ -544,66 +518,24 @@ const CONTACTS = [
 ];
 // สินค้า
 const PRODUCTS = [
-  {
-    id: 'machine-pro',
-    name: 'เครื่องทำเครื่องดื่มอัตโนมัติ Pro',
-    emoji: '🤖',
-    desc: 'เครื่องขนาด 20 ลิตร ควบคุมผ่านเว็บ ตวงน้ำอัตโนมัติ ต้มอุณหภูมิแม่นยำ แจ้งเตือนเมื่อต้องใส่วัตถุดิบ',
-    price: 15900,
-    oldPrice: 19900,
-    badge: 'ขายดี',
-    link: 'https://line.me/R/ti/p/@yourid'
-  },
-  {
-    id: 'machine-mini',
-    name: 'เครื่องทำเครื่องดื่ม Mini',
-    emoji: '⚙️',
-    desc: 'เครื่องขนาด 10 ลิตร เหมาะสำหรับใช้ในบ้านหรือร้านเล็กๆ ครบทุกฟังก์ชัน',
-    price: 9900,
-    oldPrice: 12900,
-    badge: 'แนะนำ',
-    link: 'https://line.me/R/ti/p/@yourid'
-  },
-  {
-    id: 'herbal-set',
-    name: 'ชุดสมุนไพร 3 สูตร',
-    emoji: '🌿',
-    desc: 'กระเจี๊ยบ 120g + เก๊กฮวย 150g + สามเกลอ 2 ห่อ พร้อมตะกร้าใส่สมุนไพร',
-    price: 450,
-    oldPrice: 590,
-    badge: 'ประหยัด 24%',
-    link: 'https://line.me/R/ti/p/@yourid'
-  },
-  {
-    id: 'tea-set',
-    name: 'ชุดชาไทยพรีเมียม',
-    emoji: '🧋',
-    desc: 'ผงชาไทย 200g + นมสดพาสเจอร์ไรซ์ 2L + หญ้าหวาน 100g ทำได้ 10 ลิตร',
-    price: 390,
-    oldPrice: null,
-    badge: null,
-    link: 'https://line.me/R/ti/p/@yourid'
-  },
-  {
-    id: 'accessory-basket',
-    name: 'ตะกร้าใส่สมุนไพร (สแตนเลส)',
-    emoji: '🧺',
-    desc: 'ตะกร้าสแตนเลส 304 ทนความร้อน ขนาดพอดีหม้อ 20L พร้อมหูจับ',
-    price: 350,
-    oldPrice: null,
-    badge: null,
-    link: 'https://line.me/R/ti/p/@yourid'
-  },
-  {
-    id: 'accessory-chiller',
-    name: 'ชุด Cool Down (คอยล์ทองแดง)',
-    emoji: '❄️',
-    desc: 'คอยล์ทองแดง 10 เมตร + ปั๊มจุ่ม 12V ลดอุณหภูมิน้ำจาก 95°C → 60°C ใน 15 นาที',
-    price: 1200,
-    oldPrice: 1500,
-    badge: 'ใหม่',
-    link: 'https://line.me/R/ti/p/@yourid'
-  },
+  { id:'BEV-SYS-MACH-020L-V1', name:'เครื่องทำเครื่องดื่มอัตโนมัติ V1', image:'images/BEV-SYS-MACH-020L-V1.png', emoji:'🤖',
+    desc:'เครื่องขนาด 20 ลิตร ควบคุมผ่านเว็บ ตวงน้ำอัตโนมัติ ต้มอุณหภูมิแม่นยำ แจ้งเตือนเมื่อต้องใส่วัตถุดิบ',
+    price:29900, oldPrice:33900, badge:'ขายดี' },
+  { id:'BEV-PRT-POT-030L-V1', name:'หม้อต้ม 30L พร้อมฮีเตอร์+วาล์ว', image:'images/BEV-PRT-POT-030L-V1.png', emoji:'⚙️',
+    desc:'หม้อต้ม 30L พร้อมฮีเตอร์+วาล์ว ประกอบสำเร็จพร้อมใช้',
+    price:3900, oldPrice:4900, badge:'แนะนำ' },
+  { id:'BEV-PRT-STIR-012V-V2', name:'มอเตอร์กวนแม่เหล็กรุ่นใหม่แรงบิดสูง', image:'images/BEV-PRT-STIR-012V-V2.png', emoji:'🌿',
+    desc:'มอเตอร์กวนแม่เหล็กรุ่นใหม่แรงบิดสูง ประกอบสำเร็จพร้อมใช้',
+    price:1900, oldPrice:2100, badge:'ประหยัด 10%' },
+  { id:'BEV-PRT-LDC-040K-V1', name:'โหลดเซลล์ 40kg พร้อม HX711 Update Controller', image:'images/BEV-PRT-LDC-040K-V1.png', emoji:'🧋',
+    desc:'โหลดเซลล์ 40kg พร้อม HX711 Update Controller ประกอบสำเร็จพร้อมใช้',
+    price:1500, oldPrice:null, badge:null },
+  { id:'accessory-basket', name:'ตะกร้าใส่สมุนไพร (สแตนเลส)', image:'images/accessory-basket.jpg', emoji:'🧺',
+    desc:'ตะกร้าสแตนเลส 304 ทนความร้อน ขนาดพอดีหม้อ 20L พร้อมหูจับ',
+    price:350, oldPrice:null, badge:null },
+  { id:'accessory-chiller', name:'ชุด Cool Down (คอยล์ทองแดง)', image:'images/accessory-chiller.jpg', emoji:'❄️',
+    desc:'คอยล์ทองแดง 10 เมตร + ปั๊มจุ่ม 12V ลดอุณหภูมิน้ำจาก 95°C → 60°C ใน 15 นาที',
+    price:1200, oldPrice:1500, badge:'ใหม่' },
 ];
 /* =====================================================
    🎨 Render UI
@@ -683,9 +615,11 @@ function renderContacts() {
 }
 function renderProducts() {
   document.getElementById('productsGrid').innerHTML = PRODUCTS.map(p => `
-    <div class="product-card">
+    <a href="products/${p.id}.html" class="product-card">
       <div class="product-image">
-        ${p.emoji}
+        <img src="${p.image}" alt="${p.name}"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <span class="emoji-fallback" style="display:none; width:100%; height:100%; align-items:center; justify-content:center;">${p.emoji}</span>
         ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
       </div>
       <div class="product-info">
@@ -695,12 +629,8 @@ function renderProducts() {
           <span class="price-current">฿${p.price.toLocaleString()}</span>
           ${p.oldPrice ? `<span class="price-old">฿${p.oldPrice.toLocaleString()}</span>` : ''}
         </div>
-        <div class="product-actions">
-          <a href="${p.link}" target="_blank" rel="noopener" class="btn btn-primary">สั่งซื้อ</a>
-          <a href="#contact" class="btn">สอบถาม</a>
-        </div>
       </div>
-    </div>
+    </a>
   `).join('');
 }
 /* =====================================================
