@@ -1,7 +1,7 @@
 const PRODUCTS_DETAIL = {
   'BEV-SYS-MACH-020L-V1': {
-    name:'เครื่องทำเครื่องดื่มอัตโนมัติ Pro', image:'images/BEV-SYS-MACH-020L-V1.png', emoji:'🤖',
-    price:15900, oldPrice:19900, badge:'ขายดี',
+    name:'เครื่องทำเครื่องดื่มอัตโนมัติ V1', image:'images/BEV-SYS-MACH-020L-V1.png', emoji:'🤖',
+    price:29900, oldPrice:33900, badge:'ขายดี',
     video:'nBXA8tBAndg',   // ← เปลี่ยนเป็น YouTube ID คลิปน้ำกระเจี๊ยบของคุณ
     gallery:[
       { src:'images/machine-full.jpg',    caption:'ภาพรวมเครื่องทั้งระบบ' },
