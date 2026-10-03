@@ -10,7 +10,7 @@ const PRODUCTS_DETAIL = {
       { src:'images/part-stir.jpg',       caption:'ชุดกวนแม่เหล็ก (Magnetic Stir)' },
       { src:'images/machine-pro-dim.jpg', caption:'ผังขนาดและจุดติดตั้ง' },
     ],
-    full_desc:'เครื่องทำเครื่องดื่มอัตโนมัติรุ่น Pro ขนาด 20 ลิตร ... (ข้อความเดิมของคุณ)',
+    full_desc:'เครื่องขนาด 20 ลิตร ควบคุมผ่านเว็บ ตวงน้ำอัตโนมัติ ต้มอุณหภูมิแม่นยำ แจ้งเตือนเมื่อต้องใส่วัตถุดิบ',
     specs:[['ความจุ','20 ลิตร'],['ควบคุม','Web Browser'],['ตวงน้ำ','Load Cell ±10g'],['อุณหภูมิ','±1°C'],['กำลังไฟ','2000W'],['วัสดุ','Stainless 304']],
     order_link:'https://line.me/R/ti/p/@yourid'
   },
