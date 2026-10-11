@@ -35,10 +35,17 @@ const PRODUCTS_DETAIL = {
     specs:[['ผงชาไทย','200g'],['นมสด','2 ลิตร'],['หญ้าหวาน','100g'],['ทำได้','10 ลิตร'],['ไม่ใช้','ครีมเทียม'],['อายุเก็บ','นม 7 วัน']],
     order_link:'https://line.me/ti/p/~atikomtce4'
   },
-  'accessory-basket': {
-    name:'ตะกร้าใส่สมุนไพร (สแตนเลส)', image:'images/accessory-basket.jpg', emoji:'🧺',
-    price:350, oldPrice:null, badge:null,
-    full_desc:'ตะกร้าใส่สมุนไพรสแตนเลส 304 เกรดอาหาร ทนความร้อน รูระบายละเอียดกันสมุนไพรหลุด พร้อมหูจับยาว จับถนัด ล้างง่าย',
+  'UTI-ASM-CTL-001-V1': {
+    name:'กล่องควบคุมอุณหภูมิ STC-1000', image:'images/UTI-ASM-CTL-001-V1/UTI-ASM-CTL-001-V1.png', emoji:'🧺',
+    price:450, oldPrice:null, badge:null,
+    video:'YE0hjU85A2M',   // ← เปลี่ยนเป็น YouTube ID คลิปน้ำกระเจี๊ยบของคุณ
+    gallery:[
+      { src:'images/UTI-ASM-CTL-001-V1/UTI-ASM-CTL-001-V1-front.png',  caption:'STC-1000 ด้านหน้า' },
+      { src:'images/UTI-ASM-CTL-001-V1/UTI-ASM-CTL-001-V1-top.png',    caption:'STC-1000 ด้านบน' },
+      { src:'images/UTI-ASM-CTL-001-V1/UTI-ASM-CTL-001-V1-inside.png', caption:'STC-1000 ด้านใน' },
+      { src:'images/UTI-ASM-CTL-001-V1/UTI-ASM-CTL-001-V1-label.png',  caption:'STC-1000 Label' },
+    ],
+    full_desc:'กล่องควบคุมอุณหภูมิ STC-1000 พร้อมใช้',
     specs:[['วัสดุ','Stainless 304'],['ขนาด','พอดีหม้อ 20L'],['รูระบาย','2mm'],['หูจับ','ยาว 15cm'],['ทนร้อน','200°C'],['ล้าง','เครื่องล้างจานได้']],
     order_link:'https://line.me/ti/p/~atikomtce4'
   },
