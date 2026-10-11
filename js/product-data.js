@@ -36,17 +36,26 @@ const PRODUCTS_DETAIL = {
     order_link:'https://line.me/ti/p/~atikomtce4'
   },
   'UTI-ASM-CTL-001-V1': {
-    name:'กล่องควบคุมอุณหภูมิ STC-1000', image:'images/UTI-ASM-CTL-001-V1/UTI-ASM-CTL-001-V1.png', emoji:'🧺',
+    name:'กล่องควบคุมอุณหภูมิ STC-1000 พร้อมใช้', image:'images/UTI-ASM-CTL-001-V1/UTI-ASM-CTL-001-V1.png', emoji:'🎛️',
     price:450, oldPrice:null, badge:null,
-    video:'YE0hjU85A2M',   // ← เปลี่ยนเป็น YouTube ID คลิปน้ำกระเจี๊ยบของคุณ
+    video:'YE0hjU85A2M',   // YouTube ID คลิปสอนตั้งค่า STC-1000 (Playlist: GreenMind Tutorial)
     gallery:[
       { src:'images/UTI-ASM-CTL-001-V1/UTI-ASM-CTL-001-V1-front.png',  caption:'STC-1000 ด้านหน้า' },
       { src:'images/UTI-ASM-CTL-001-V1/UTI-ASM-CTL-001-V1-top.png',    caption:'STC-1000 ด้านบน' },
       { src:'images/UTI-ASM-CTL-001-V1/UTI-ASM-CTL-001-V1-inside.png', caption:'STC-1000 ด้านใน' },
       { src:'images/UTI-ASM-CTL-001-V1/UTI-ASM-CTL-001-V1-label.png',  caption:'STC-1000 Label' },
     ],
-    full_desc:'กล่องควบคุมอุณหภูมิ STC-1000 พร้อมใช้',
-    specs:[['วัสดุ','Stainless 304'],['ขนาด','พอดีหม้อ 20L'],['รูระบาย','2mm'],['หูจับ','ยาว 15cm'],['ทนร้อน','200°C'],['ล้าง','เครื่องล้างจานได้']],
+    full_desc:'STC-1000 ประกอบสำเร็จในกล่อง พร้อมสายไฟ AC เข้า เต้ารับ AC บนฝา และเซนเซอร์ NTC กันน้ำ — แกะกล่องเสียบปลั๊กใช้ได้ทันที ตั้งอุณหภูมิเป้า + ตั้ง Gap กันคอมเพรสเซอร์ตัดถี่ เหมาะแปลงตู้เย็นเป็นตู้หมักเบียร์/ไวน์ ตู้แช่เครื่องดื่ม โรงเห็ด ตู้ปลา',
+    specs:[
+      ['ตัวควบคุม','STC-1000 (เอาต์พุต Cool)'],
+      ['ไฟเข้า','220V AC 50/60Hz พร้อมสาย+ปลั๊ก'],
+      ['โหลดสูงสุด','10A (~2,200W) ผ่านเต้ารับบนฝา'],
+      ['ช่วงวัด','-50 ถึง 110°C · ความแม่นยำ ±1°C'],
+      ['เซนเซอร์','NTC กันน้ำ สายยาว ~1 ม.'],
+      ['ฟังก์ชัน','F1 เป้า / F2 Gap / F3 หน่วงคอมฯ / F4 ชดเชย'],
+      ['ตัวกล่อง','พลาสติก ABS · ใช้ในที่แห้ง/ในร่ม'],
+      ['ก่อนส่ง','เบิร์นอิน + เทสต์ทุกตัว'],
+    ],
     order_link:'https://line.me/ti/p/~atikomtce4'
   },
   'accessory-chiller': {
